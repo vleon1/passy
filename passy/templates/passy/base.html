@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+{% load static %}
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{% static 'passy/style.css' %}" />
+        <title>{% block title %}Passy{% endblock %}</title>
+    </head>
+
+    <body>
+        <div id="title_bar">
+            {% block title_bar %}
+                <ul>
+                    {% if request.user.is_authenticated %}
+                        <li><a href="{% url 'passy:passwords' %}">passwords</a></li>
+                        <li><a href="{% url 'passy:logout' %}">logout</a></li>
+                    {% else %}
+                        <li><a href="{% url 'passy:register' %}">register</a></li>
+                        <li><a href="{% url 'passy:login' %}">login</a></li>
+                    {% endif %}
+                </ul>
+            {% endblock %}
+        </div>
+
+        <div id="error_bar">
+            {% block error_bar %}
+                {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+            {% endblock %}
+        </div>
+
+        <div id="content">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </body>
+</html>

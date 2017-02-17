@@ -1,18 +1,21 @@
-{% if is_logged_in %}
-    <p>You are logged in.</p>
-{% else %}
-    <p>Please log in:</p>
-    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-    <form action="{% url 'passy:login' %}" method="post">
-    {% csrf_token %}
-      <div class="container">
-        <label><b>Username</b></label>
-        <input type="text" placeholder="Enter Username" name="username" required>
+{% extends "passy/base.html" %}
 
-        <label><b>Password</b></label>
-        <input type="password" placeholder="Enter Password" name="master_password" required>
+{% block content %}
+    {% if request.user.is_authenticated %}
+        <p>You are already logged in!</p>
+    {% else %}
+        <label><b>Log in:</b></label>
+        <form action="{% url 'passy:login' %}" method="post">
+        {% csrf_token %}
+            <div class="login_container">
+                <label><b>Username</b></label>
+                <input type="text" placeholder="Enter Username" name="username" required>
 
-        <button type="submit">Login</button>
-      </div>
-    </form>
-{% endif %}
+                <label><b>Password</b></label>
+                <input type="password" placeholder="Enter Password" name="master_password" required>
+
+                <button type="submit">Login</button>
+            </div>
+        </form>
+    {% endif %}
+{% endblock %}
