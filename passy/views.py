@@ -2,7 +2,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
 from . import models
@@ -77,7 +77,6 @@ def passwords(request: HttpRequest) -> HttpResponse:
 def password(request: HttpRequest, site: str) -> HttpResponse:
 
     user: models.User = request.user
-
     master_password = request.session['master_password']
 
     stored_password = models.get_password(owner=user, site=site)
@@ -100,6 +99,9 @@ def password(request: HttpRequest, site: str) -> HttpResponse:
     else:
         stored_password_text = stored_password.get(master_password=master_password)
 
-    context = dict(stored_password=stored_password, stored_password_text=stored_password_text)
+    if request.META['HTTP_ACCEPT'] == 'application/json':
+        return JsonResponse(data=dict(password=stored_password_text))
 
-    return render(request, 'passy/password.html', context)
+    else:
+        context = dict(stored_password=stored_password, stored_password_text=stored_password_text)
+        return render(request, 'passy/password.html', context)
