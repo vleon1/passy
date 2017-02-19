@@ -99,7 +99,7 @@ def password(request: HttpRequest, site: str) -> HttpResponse:
     else:
         stored_password_text = stored_password.get(master_password=master_password)
 
-    if request.META['HTTP_ACCEPT'] == 'application/json':
+    if 'application/json' in request.META['HTTP_ACCEPT']:
         return JsonResponse(data=dict(password=stored_password_text))
 
     else:

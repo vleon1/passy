@@ -1,41 +1,35 @@
 function FillPassword(url, id_postfix) {
-    var httpRequest = new XMLHttpRequest();
-    httpRequest.onreadystatechange = function() {
-        if (httpRequest.readyState == 4 && httpRequest.status == 200) {
-            setPassword(httpRequest.responseText, id_postfix);
-        }
-    };
-    httpRequest.open("GET", url, true); // true for asynchronous
-    httpRequest.setRequestHeader("Accept", "application/json");
-    httpRequest.send();
+    jQuery .getJSON(url, function(data) {
+        setPassword(data, id_postfix);
+    });
 }
 
-function setPassword(data_as_string, id_postfix) {
-    var getButton = $('#get' + id_postfix)[0];
-    var copyButton = $('#copy' + id_postfix)[0];
+function setPassword(data, id_postfix) {
+    var getButton = jQuery ('#get' + id_postfix)[0];
+    var copyButton = jQuery ('#copy' + id_postfix)[0];
 
     getButton.style.visibility = 'hidden';
     getButton.style.display = 'none';
 
-    copyButton.setAttribute('data-clipboard-text', JSON.parse(data_as_string).password.toString());
+    copyButton.setAttribute('data-clipboard-text', data.password.toString());
     copyButton.style.visibility = 'visible';
 }
 
 function initClipboard()
 {
     // Tooltip
-    $('[id^=copy]').tooltip({
+    jQuery('[id^=copy]').tooltip({
       trigger: 'click',
       placement: 'bottom'
     });
 
-    function setTooltip(btn, message) {
-        $(btn).tooltip('hide').attr('data-original-title', message).tooltip('show');
+    function setTooltip(button, message) {
+        jQuery(button).tooltip('hide').attr('data-original-title', message).tooltip('show');
     }
 
-    function hideTooltip(btn) {
+    function hideTooltip(button) {
         setTimeout(function() {
-            $(btn).tooltip('hide');
+            jQuery(button).tooltip('hide');
         }, 1000);
     }
 
