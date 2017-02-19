@@ -10,7 +10,7 @@ const config = {
     entry: './passy/assets/js/index.js',
     output: {
         path: outputPath,
-        filename: "bundle.js",
+        filename: "[name]-[hash].js",
         libraryTarget: 'var',
         library: 'Passy',
     },

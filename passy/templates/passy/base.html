@@ -3,37 +3,52 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Passy{% endblock %}</title>
-        {% block scripts %}
-            {% load render_bundle from webpack_loader %}
-            {% render_bundle 'main' %}
-        {% endblock %}
+        <title>Passy - {{ request.resolver_match.url_name }}</title>
+        {% load render_bundle from webpack_loader %}
+        {% render_bundle 'main' %}
     </head>
 
     <body>
-        <div id="title_bar">
-            {% block title_bar %}
-                <ul>
-                    {% if request.user.is_authenticated %}
-                        <li><a href="{% url 'passy:passwords' %}">passwords</a></li>
-                        <li><a href="{% url 'passy:logout' %}">logout</a></li>
-                    {% else %}
-                        <li><a href="{% url 'passy:register' %}">register</a></li>
-                        <li><a href="{% url 'passy:login' %}">login</a></li>
-                    {% endif %}
-                </ul>
-            {% endblock %}
-        </div>
+        <header class="navbar navbar-default" id="top">
+            <div class="container">
+                <div class="navbar-header">
+                    <a href="{% url 'passy:index' %}" class="navbar-brand">Passy</a>
+                </div>
+                <nav class="collapse navbar-collapse" id="bs-navbar">
+                    <ul class="nav navbar-nav">
+                        {% if request.user.is_authenticated %}
+                            <li><a href="{% url 'passy:passwords' %}">passwords</a></li>
+                        {% else %}
+                            <li><a href="{% url 'passy:register' %}">register</a></li>
+                        {% endif %}
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        {% if request.user.is_authenticated %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">User<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'passy:logout' %}">logout</a></li>
+                            </ul>
+                        </li>
+                        {% else %}
+                            <li><a href="{% url 'passy:login' %}">login</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </header>
 
-        <div id="error_bar">
-            {% block error_bar %}
-                {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-            {% endblock %}
-        </div>
+        {% if error_message %}
+            <div class="alert alert-danger" role="alert">
+                <strong>{{ error_message }}</strong>
+            </div>
+        {% endif %}
 
-        <div id="content">
-            {% block content %}
-            {% endblock %}
+        <div class="container">
+            <div class="col-md-9" role="main">
+                {% block content %}
+                {% endblock %}
+            </div>
         </div>
     </body>
 </html>

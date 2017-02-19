@@ -1,0 +1,25 @@
+{% extends "passy/base.html" %}
+
+{% block content %}
+    {% if request.user.is_authenticated %}
+        <h1>You are already registered and logged in!</h1>
+    {% else %}
+        <form action="{% url 'passy:register' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" class="form-control" name="email" id="email" placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="username">User Name</label>
+                <input type="text" class="form-control" name="username" id="username" placeholder="Enter the desired username" required>
+            </div>
+            <div class="form-group">
+                <label for="master_password">Password</label>
+                <input type="password" class="form-control" name="master_password" id="master_password" placeholder="Enter the desired password" required>
+            </div>
+
+            <button type="submit" class="btn btn-default">Register</button>
+        </form>
+    {% endif %}
+{% endblock %}

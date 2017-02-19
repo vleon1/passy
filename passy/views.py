@@ -13,7 +13,7 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 def register(request: HttpRequest) -> HttpResponse:
-    return HttpResponse("Register.")
+    return render(request, 'passy/register.html', dict())
 
 
 def login(request: HttpRequest) -> HttpResponse:
