@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 
-{% load static %}
-
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <link rel="stylesheet" href="{% static 'passy/style.css' %}" />
         <title>{% block title %}Passy{% endblock %}</title>
         {% block scripts %}
+            {% load render_bundle from webpack_loader %}
+            {% render_bundle 'main' %}
         {% endblock %}
     </head>
 

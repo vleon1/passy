@@ -1,0 +1,39 @@
+{
+  "name": "passy",
+  "version": "1.0.0",
+  "description": "The javascript part of the passy app",
+  "main": "passy/assets/js/index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/webpack --config webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vleon1/passy.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vleon1/passy/issues"
+  },
+  "homepage": "https://github.com/vleon1/passy#readme",
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.3.2",
+    "babel-preset-latest": "^6.22.0",
+    "bootstrap": "^3.3.7",
+    "clean-webpack-plugin": "^0.1.15",
+    "clipboard": "^1.6.0",
+    "css-loader": "^0.26.1",
+    "extract-text-webpack-plugin": "^2.0.0-rc.3",
+    "file-loader": "^0.10.0",
+    "jquery": "^3.1.1",
+    "webpack": "^2.2.1",
+    "webpack-bundle-tracker": "^0.2.0"
+  },
+  "babel": {
+    "presets": [
+      "latest"
+    ]
+  }
+}
