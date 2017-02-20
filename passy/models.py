@@ -30,7 +30,7 @@ def get_crypter(master_password: str, salt: bytes) -> Fernet:
 
 class StoredPassword(models.Model):
 
-    site: str = models.CharField(max_length=200, unique=True)
+    site: str = models.CharField(max_length=200)
 
     data: bytes = models.BinaryField(max_length=200)
     salt: bytes = models.BinaryField(max_length=200)

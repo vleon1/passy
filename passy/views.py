@@ -74,27 +74,31 @@ def passwords(request: HttpRequest) -> HttpResponse:
 
 
 @login_required
-def password(request: HttpRequest, site: str) -> HttpResponse:
+def password(request: HttpRequest, password_id: str) -> HttpResponse:
 
     user: models.User = request.user
     master_password = request.session['master_password']
 
-    stored_password = models.get_password(owner=user, site=site)
+    stored_password = models.get_password(owner=user, id=password_id)
 
     if request.method == "POST":
 
         should_delete = request.POST.get("should_delete")
+
         if should_delete is not None:
+
             stored_password.delete()
-            return redirect('passy:passwords')
+        else:
 
-        site: str = request.POST['site']
-        stored_password_text: str = request.POST['stored_password_text']
+            site: str = request.POST['site']
+            stored_password_text: str = request.POST['stored_password_text']
 
-        stored_password.site = site
-        stored_password.set(password=stored_password_text, master_password=master_password)
+            stored_password.site = site
+            stored_password.set(password=stored_password_text, master_password=master_password)
 
-        stored_password.save()
+            stored_password.save()
+
+        return redirect('passy:passwords')
 
     else:
         stored_password_text = stored_password.get(master_password=master_password)
