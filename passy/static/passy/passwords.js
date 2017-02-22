@@ -1,11 +1,7 @@
-import jQuery from 'jquery'
-import 'bootstrap'
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap/dist/css/bootstrap-theme.min.css'
-import Clipboard from 'clipboard'
 
-export function fillPassword(url, id_postfix) {
-    jQuery.getJSON(url, (data) => {
+function fillPassword(url, id_postfix) {
+
+    jQuery.getJSON(url, function(data){
         setPassword(data, id_postfix);
     });
 
@@ -19,13 +15,13 @@ export function fillPassword(url, id_postfix) {
         getButton.style.visibility = 'hidden';
         getButton.style.display = 'none';
 
-        copyButton.setAttribute('data-clipboard-text', data.password.toString());
+        copyButton.setAttribute('data-clipboard-text', data.stored_password_text);
         copyButton.style.visibility = new_visibility;
         copyButton.style.display = new_display;
     }
 }
 
-export function initClipboard()
+function initClipboard()
 {
     // Tooltip
     jQuery('[id^=copy]').tooltip({

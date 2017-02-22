@@ -1,22 +1,36 @@
+from django import shortcuts
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
-from django.http import HttpRequest
+from django.core.handlers.wsgi import WSGIRequest
+
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.utils.decorators import method_decorator
+from rest_framework import status
+from rest_framework.request import Request
+from rest_framework.reverse import reverse
+from rest_framework.views import APIView
 
-from . import models
+from . import models, serializers
 
 
-def index(request: HttpRequest) -> HttpResponse:
+def redirect(name: str, request: Request) -> HttpResponse:
+    url = reverse(name, request=request)
+    response = HttpResponseRedirect(url)
+    response.status_code = status.HTTP_303_SEE_OTHER
+    return response
+
+
+def index(request: WSGIRequest) -> HttpResponse:
     return render(request, 'passy/index.html', dict())
 
 
-def register(request: HttpRequest) -> HttpResponse:
+def register(request: WSGIRequest) -> HttpResponse:
     return render(request, 'passy/register.html', dict())
 
 
-def login(request: HttpRequest) -> HttpResponse:
+def login(request: WSGIRequest) -> HttpResponse:
 
     context = dict()
 
@@ -29,7 +43,7 @@ def login(request: HttpRequest) -> HttpResponse:
         if user is not None:
             auth.login(request, user)
             request.session['master_password'] = master_password
-            return redirect('passy:index')
+            return redirect('passy:index', request=request)
         else:
             if models.User.objects.filter(username=username).exists():
                 context['error_message'] = f"Provided password is incorrect for user '{username}'"
@@ -39,73 +53,74 @@ def login(request: HttpRequest) -> HttpResponse:
     return render(request, 'passy/login.html', context)
 
 
-def logout(request: HttpRequest) -> HttpResponse:
+def logout(request: WSGIRequest) -> HttpResponse:
 
     auth.logout(request)
 
-    return redirect('passy:index')
+    return redirect('passy:index', request=request)
 
 
-@login_required
-def passwords(request: HttpRequest) -> HttpResponse:
+@method_decorator(login_required, name='dispatch')
+class PasswordsView(APIView):
 
-    user: models.User = request.user
+    template_name = 'passy/passwords.html'
 
-    context = dict()
+    def post(self, request: Request) -> HttpResponse:
 
-    if request.method == "POST":
+        serializer = serializers.StoredPassword(request=request, data=request.data)
 
-        master_password = request.session['master_password']
+        if serializer.is_valid():
+            serializer.save()
+        return render(request, self.template_name, dict(serializer=serializer,
+                                                        stored_passwords=models.get_passwords(owner=request.user)))
 
-        site: str = request.POST['site']
-        stored_password_text: str = request.POST['stored_password_text']
+    def get(self, request: Request) -> HttpResponse:
 
-        stored_password = models.StoredPassword(site=site, owner=user)
-        stored_password.set(password=stored_password_text, master_password=master_password)
+        serializer = serializers.StoredPassword(request=request)
 
-        try:
-            stored_password.save()
-        except IntegrityError:
-            context['error_message'] = f"Password for '{site}' already exists!"
+        return render(request, self.template_name, dict(serializer=serializer,
+                                                        stored_passwords=models.get_passwords(owner=request.user)))
 
-    context['stored_passwords'] = models.get_passwords(owner=user)
-
-    return render(request, 'passy/passwords.html', context)
+    def patch(self, request: Request) -> HttpResponse:
+        pass
 
 
-@login_required
-def password(request: HttpRequest, password_id: str) -> HttpResponse:
+@method_decorator(login_required, name='dispatch')
+class PasswordView(APIView):
 
-    user: models.User = request.user
-    master_password = request.session['master_password']
+    template_name = 'passy/password.html'
 
-    stored_password = models.get_password(owner=user, id=password_id)
+    @staticmethod
+    def get_object(request: Request, pk: str) -> models.StoredPassword:
+        return models.get_password(owner=request.user, pk=int(pk))
 
-    if request.method == "POST":
+    def patch(self, request: Request, pk: str) -> HttpResponse:
 
-        should_delete = request.POST.get("should_delete")
+        instance = self.get_object(request, pk)
 
-        if should_delete is not None:
+        serializer = serializers.StoredPassword(request=request, instance=instance, data=request.data)
 
-            stored_password.delete()
+        if serializer.is_valid():
+            serializer.save()
+            return redirect('passy:passwords', request=request)
         else:
+            return render(request, self.template_name, dict(pk=pk, serializer=serializer))
 
-            site: str = request.POST['site']
-            stored_password_text: str = request.POST['stored_password_text']
+    def get(self, request: Request, pk: str) -> HttpResponse:
 
-            stored_password.site = site
-            stored_password.set(password=stored_password_text, master_password=master_password)
+        instance = self.get_object(request, pk)
 
-            stored_password.save()
+        serializer = serializers.StoredPassword(request=request, instance=instance)
 
-        return redirect('passy:passwords')
+        if request.is_ajax():
+            return JsonResponse(data=serializer.data)
+        else:
+            return render(request, self.template_name, dict(pk=pk, serializer=serializer))
 
-    else:
-        stored_password_text = stored_password.get(master_password=master_password)
+    def delete(self, request: Request, pk: str) -> HttpResponse:
 
-    if 'application/json' in request.META['HTTP_ACCEPT']:
-        return JsonResponse(data=dict(password=stored_password_text))
+        instance = self.get_object(request, pk)
 
-    else:
-        context = dict(stored_password=stored_password, stored_password_text=stored_password_text)
-        return render(request, 'passy/password.html', context)
+        instance.delete()
+
+        return redirect('passy:passwords', request=request)
