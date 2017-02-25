@@ -71,19 +71,24 @@ class PasswordsView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-        return render(request, self.template_name, dict(serializer=serializer,
-                                                        stored_passwords=models.get_passwords(owner=request.user)))
+
+        return self.finalize_result(request, serializer)
 
     def get(self, request: Request) -> HttpResponse:
 
         serializer = serializers.StoredPassword(request=request)
+
+        return self.finalize_result(request, serializer)
+
+    def finalize_result(self, request: Request, serializer: serializers.StoredPassword) -> HttpResponse:
+
         get_password_serializer = serializers.GeneratedPasswordRequest()
 
-        return render(request, self.template_name, dict(serializer=serializer, get_password_serializer=get_password_serializer,
-                                                        stored_passwords=models.get_passwords(owner=request.user)))
+        data = dict(stored_passwords=models.get_passwords(owner=request.user))
+        data.update(serializer.data)
+        data.update(get_password_serializer.data)
 
-    def patch(self, request: Request) -> HttpResponse:
-        pass
+        return render(request, self.template_name, data)
 
 
 @method_decorator(login_required, name='dispatch')

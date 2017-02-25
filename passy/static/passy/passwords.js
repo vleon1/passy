@@ -21,8 +21,9 @@ function fillPassword(url, id_postfix) {
     }
 }
 
-function getPassword(url) {
+function getPassword() {
 
+    var url = jQuery("#get_password")[0].action;
     var length = jQuery("input[name=length]")[0].valueAsNumber;
     var use_symbols = jQuery("input[name=use_symbols]")[0].checked;
 
@@ -61,5 +62,14 @@ function initClipboard()
     clipboard.on('error', function(e) {
         setTooltip(e.trigger, 'Press Ctrl-C to copy');
         hideTooltip(e.trigger);
+    });
+}
+
+function initForm() {
+    $('#get_password').submit(function (event) {
+
+        event.preventDefault();
+
+        getPassword();
     });
 }
