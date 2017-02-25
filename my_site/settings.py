@@ -2,6 +2,8 @@ from os import path
 import string
 import secrets
 
+from passy import common
+
 
 # todo: configure cache
 
@@ -16,8 +18,7 @@ DEBUG = True
 if DEBUG:
     SECRET_KEY = "|z*)*#!HRkC4X\\Wy~GjL~L<'.\\.T}QvdJy^(r#E{hl^}#uig4;:6>t<81cy8ZvOn"
 else:
-    alphabet = string.ascii_letters + string.digits + string.punctuation
-    SECRET_KEY = ''.join(secrets.choice(alphabet) for i in range(secrets.DEFAULT_ENTROPY * 2))
+    SECRET_KEY = common.generate_random_password
 
 
 ALLOWED_HOSTS = []

@@ -1,7 +1,7 @@
 
 function fillPassword(url, id_postfix) {
 
-    jQuery.getJSON(url, function(data){
+    jQuery.getJSON(url, function(data) {
         setPassword(data, id_postfix);
     });
 
@@ -19,6 +19,18 @@ function fillPassword(url, id_postfix) {
         copyButton.style.visibility = new_visibility;
         copyButton.style.display = new_display;
     }
+}
+
+function getPassword(url) {
+
+    var length = jQuery("input[name=length]")[0].valueAsNumber;
+    var use_symbols = jQuery("input[name=use_symbols]")[0].checked;
+
+    var stored_password_text_field = jQuery("input[name=stored_password_text]")[0];
+
+    jQuery.getJSON(url, {length: length, use_symbols: use_symbols}, function(data) {
+        stored_password_text_field.value = data['generated_password'];
+    });
 }
 
 function initClipboard()

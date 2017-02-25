@@ -1,4 +1,3 @@
-from django import shortcuts
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.handlers.wsgi import WSGIRequest
@@ -7,6 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
+from django.views import View
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.reverse import reverse
@@ -77,8 +77,9 @@ class PasswordsView(APIView):
     def get(self, request: Request) -> HttpResponse:
 
         serializer = serializers.StoredPassword(request=request)
+        get_password_serializer = serializers.GeneratedPasswordRequest()
 
-        return render(request, self.template_name, dict(serializer=serializer,
+        return render(request, self.template_name, dict(serializer=serializer, get_password_serializer=get_password_serializer,
                                                         stored_passwords=models.get_passwords(owner=request.user)))
 
     def patch(self, request: Request) -> HttpResponse:
@@ -113,7 +114,7 @@ class PasswordView(APIView):
         serializer = serializers.StoredPassword(request=request, instance=instance)
 
         if request.is_ajax():
-            return JsonResponse(data=serializer.data)
+            return JsonResponse(data=serializer.data, status=status.HTTP_200_OK)
         else:
             return render(request, self.template_name, dict(pk=pk, serializer=serializer))
 
@@ -124,3 +125,15 @@ class PasswordView(APIView):
         instance.delete()
 
         return redirect('passy:passwords', request=request)
+
+
+class GetRandomPasswordView(View):
+
+    @staticmethod
+    def get(request: WSGIRequest) -> HttpResponse:
+
+        serializer = serializers.GeneratedPasswordRequest(data=request.GET)
+        if serializer.is_valid():
+            return JsonResponse(data=dict(generated_password=serializer.save()))
+        else:
+            return JSONResponse(data=serializer.errors)
