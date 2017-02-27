@@ -144,6 +144,6 @@ class GetRandomPasswordView(View):
 
         form = forms.GeneratedPasswordRequest(data=request.GET)
         if form.is_valid():
-            return JsonResponse(data=dict(generated_password=form.get_password()))
+            return JsonResponse(data=dict(generated_password=form.get_random_password()))
         else:
             return JsonResponse(data=form.errors)

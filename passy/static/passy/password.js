@@ -21,17 +21,24 @@ function fillPassword(url, id_postfix) {
     }
 }
 
-function getPassword() {
+function getPassword(form) {
 
-    var url = jQuery("#get_password")[0].action;
-    var length = jQuery("input[name=length]")[0].valueAsNumber;
-    var use_symbols = jQuery("input[name=use_symbols]")[0].checked;
+    var url = form.action;
+    var form_query = jQuery(form);
+    var length = form_query.find("input[name=length]")[0].valueAsNumber;
+    var use_symbols = form_query.find("input[name=use_symbols]")[0].checked;
 
     var stored_password_text_field = jQuery("input[name=stored_password_text]")[0];
 
     jQuery.getJSON(url, {length: length, use_symbols: use_symbols}, function(data) {
         stored_password_text_field.value = data['generated_password'];
     });
+}
+
+function confirmHiddenButtonClock(buttonId) {
+    if (confirm("Are you sure?") == true){
+       document.getElementById(buttonId).click();
+    }
 }
 
 function initClipboard()
@@ -65,13 +72,12 @@ function initClipboard()
     });
 }
 
-function initForms() {
-
+function initGetRandomPasswordForm() {
     // Overrides the get password button to call rest directly
-    $('#get_password').submit(function (event) {
+    $('#get_random_password_form').submit(function (event) {
 
         event.preventDefault();
 
-        getPassword();
+        getPassword(event.target);
     });
 }
