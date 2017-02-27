@@ -8,12 +8,12 @@
         <title>Passy - {{ request.resolver_match.url_name }}</title>
         <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}" />
         <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap-theme.min.css' %}" />
-        {% block scripts %}
+        {% block head_scripts %}
             <script src="{% static "jquery/dist/jquery.min.js" %}"></script>
             <script src="{% static "bootstrap/dist/js//bootstrap.min.js" %}"></script>
             <script src="{% static "js-cookie/src/js.cookie.js" %}"></script>
             <script src="{% static "passy/ajax-form.js" %}"></script>
-        {% endblock %}
+        {% endblock head_scripts %}
     </head>
 
     <body>
@@ -55,8 +55,10 @@
         <div class="container">
             <div class="col-md-9" role="main">
                 {% block content %}
-                {% endblock %}
+                {% endblock content %}
             </div>
         </div>
+        {% block footer_scripts %}
+        {% endblock footer_scripts %}
     </body>
 </html>

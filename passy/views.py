@@ -61,9 +61,9 @@ def logout(request: WSGIRequest) -> HttpResponse:
 
 
 @method_decorator(login_required, name='dispatch')
-class PasswordsView(APIView):
+class PasswordListView(APIView):
 
-    template_name = 'passy/passwords.html'
+    template_name = 'passy/password_list.html'
 
     def post(self, request: Request) -> HttpResponse:
 
@@ -110,7 +110,7 @@ class PasswordView(APIView):
             serializer.save()
             return redirect('passy:passwords', request=request)
         else:
-            return render(request, self.template_name, dict(pk=pk, serializer=serializer))
+            return self.finalize_result(request, instance, serializer)
 
     def get(self, request: Request, pk: str) -> HttpResponse:
 
@@ -121,7 +121,7 @@ class PasswordView(APIView):
         if request.is_ajax():
             return JsonResponse(data=serializer.data, status=status.HTTP_200_OK)
         else:
-            return render(request, self.template_name, dict(pk=pk, serializer=serializer))
+            return self.finalize_result(request, instance, serializer)
 
     def delete(self, request: Request, pk: str) -> HttpResponse:
 
@@ -130,6 +130,13 @@ class PasswordView(APIView):
         instance.delete()
 
         return redirect('passy:passwords', request=request)
+
+    def finalize_result(self, request: Request, instance: models.StoredPassword, serializer: serializers.StoredPassword) -> HttpResponse:
+
+        data = dict(pk=instance.pk)
+        data.update(serializer.data)
+
+        return render(request, self.template_name, data)
 
 
 class GetRandomPasswordView(View):
