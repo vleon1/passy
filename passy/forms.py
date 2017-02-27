@@ -54,7 +54,7 @@ class StoredPassword(forms.Form):
 class GeneratedPasswordRequest(forms.Form):
 
     length = forms.IntegerField(initial=common.crypto.default_password_length, required=True)
-    use_symbols = forms.BooleanField(initial=True, required=True)
+    use_symbols = forms.BooleanField(initial=True, required=False)
 
     def get_random_password(self) -> str:
         return common.crypto.generate_random_password(length=self.cleaned_data['length'],
