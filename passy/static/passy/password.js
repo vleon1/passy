@@ -21,6 +21,26 @@ function fillPassword(url, id_postfix) {
     }
 }
 
+function filterPage(filterString) {
+
+    var filterRegexString = filterString ? ".*" + filterString.split('').join(".*") + ".*": ".*";
+    var filterRegex = new RegExp(filterRegexString, 'i');
+
+    var rows = jQuery('#passwords_table').find('tbody').find('tr');
+    rows.filter(function (index, element) {
+       var siteName = getSiteName(element);
+       return filterRegex.test(siteName);
+    }).attr('style','display: ');
+    rows.filter(function (index, element) {
+       var siteName = getSiteName(element);
+       return !filterRegex.test(siteName);
+    }).attr('style','display: none');
+
+    function getSiteName(element) {
+        return jQuery(element).find("a[name=site_link]")[0].innerText
+    }
+}
+
 function getPassword(form) {
 
     var url = form.action;
@@ -74,7 +94,7 @@ function initClipboard()
 
 function initGetRandomPasswordForm() {
     // Overrides the get password button to call rest directly
-    $('#get_random_password_form').submit(function (event) {
+    jQuery('#get_random_password_form').submit(function (event) {
 
         event.preventDefault();
 
