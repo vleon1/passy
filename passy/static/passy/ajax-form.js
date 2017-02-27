@@ -5,10 +5,19 @@ function replaceDocument(docString) {
 }
 
 
+function formToJSON(form) {
+    var form_data = [].reduce.call(form.elements, function(data, element) {
+        data[element.name] = element.value;
+        return data;
+    });
+
+    return JSON.stringify(form_data);
+}
+
+
 function doAjaxSubmit(e) {
     var form = $(this);
     var btn = $(this.clk);
-    var is_custom = !!(btn.data('method') || form.data('method'));
     var method = btn.data('method') || form.data('method') || form.attr('method') || 'GET';
     method = method.toUpperCase();
     if (method === 'GET') {
@@ -19,7 +28,7 @@ function doAjaxSubmit(e) {
     var contentType =
         form.find('input[data-override="content-type"]').val() ||
         form.find('select[data-override="content-type"] option:selected').text();
-    if (method === 'POST' && !contentType && !is_custom) {
+    if (method === 'POST' && !contentType) {
         // POST requests can use standard form submits, unless we have
         // overridden the content type.
         return;
@@ -45,8 +54,8 @@ function doAjaxSubmit(e) {
             contentType = false;
             data = new FormData(form[0]);
         } else {
-            contentType = 'application/x-www-form-urlencoded; charset=UTF-8';
-            data = form.serialize();
+            contentType = 'application/json';
+            data = formToJSON(form[0]);
         }
     }
 

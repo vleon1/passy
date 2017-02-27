@@ -1,36 +1,35 @@
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.core.handlers.wsgi import WSGIRequest
 
 from django.http import HttpResponse, JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
-from rest_framework import status
-from rest_framework.request import Request
-from rest_framework.reverse import reverse
-from rest_framework.views import APIView
 
-from . import models, serializers
+from . import models, forms
+import common.status
+
+import common.typing
 
 
-def redirect(name: str, request: Request) -> HttpResponse:
-    url = reverse(name, request=request)
+def redirect(name: str) -> HttpResponse:
+    url = reverse(name)
     response = HttpResponseRedirect(url)
-    response.status_code = status.HTTP_303_SEE_OTHER
+    response.status_code = common.status.HTTP_303_SEE_OTHER
     return response
 
 
-def index(request: WSGIRequest) -> HttpResponse:
+def index(request: common.typing.Request) -> HttpResponse:
     return render(request, 'passy/index.html', dict())
 
 
-def register(request: WSGIRequest) -> HttpResponse:
+def register(request: common.typing.Request) -> HttpResponse:
     return render(request, 'passy/register.html', dict())
 
 
-def login(request: WSGIRequest) -> HttpResponse:
+def login(request: common.typing.Request) -> HttpResponse:
 
     context = dict()
 
@@ -43,7 +42,7 @@ def login(request: WSGIRequest) -> HttpResponse:
         if user is not None:
             auth.login(request, user)
             request.session['master_password'] = master_password
-            return redirect('passy:index', request=request)
+            return redirect('passy:index')
         else:
             if models.User.objects.filter(username=username).exists():
                 context['error_message'] = f"Provided password is incorrect for user '{username}'"
@@ -53,88 +52,87 @@ def login(request: WSGIRequest) -> HttpResponse:
     return render(request, 'passy/login.html', context)
 
 
-def logout(request: WSGIRequest) -> HttpResponse:
+def logout(request: common.typing.Request) -> HttpResponse:
 
     auth.logout(request)
 
-    return redirect('passy:index', request=request)
+    return redirect('passy:index')
 
 
 @method_decorator(login_required, name='dispatch')
-class PasswordListView(APIView):
+class PasswordListView(View):
 
     template_name = 'passy/password_list.html'
 
-    def post(self, request: Request) -> HttpResponse:
+    def post(self, request: common.typing.Request) -> HttpResponse:
 
-        serializer = serializers.StoredPassword(request=request, data=request.data)
+        form = forms.StoredPassword(data=request.POST)
 
-        if serializer.is_valid():
-            serializer.save()
+        if not form.create_model(request):
+            pass  # todo: do something?
 
-        return self.finalize_result(request, serializer)
+        return self.finalize_result(request)
 
-    def get(self, request: Request) -> HttpResponse:
+    def get(self, request: common.typing.Request) -> HttpResponse:
 
-        serializer = serializers.StoredPassword(request=request)
+        return self.finalize_result(request)
 
-        return self.finalize_result(request, serializer)
+    def finalize_result(self, request: common.typing.Request) -> HttpResponse:
 
-    def finalize_result(self, request: Request, serializer: serializers.StoredPassword) -> HttpResponse:
+        form = forms.StoredPassword()
 
-        get_password_serializer = serializers.GeneratedPasswordRequest()
+        form_data = {field.name: field.value() or "" for field in form}
 
         data = dict(stored_passwords=models.get_passwords(owner=request.user))
-        data.update(serializer.data)
-        data.update(get_password_serializer.data)
+        data.update(form_data)
 
         return render(request, self.template_name, data)
 
 
 @method_decorator(login_required, name='dispatch')
-class PasswordView(APIView):
+class PasswordView(View):
 
     template_name = 'passy/password.html'
 
     @staticmethod
-    def get_object(request: Request, pk: str) -> models.StoredPassword:
+    def get_object(request: common.typing.Request, pk: str) -> models.StoredPassword:
         return models.get_password(owner=request.user, pk=int(pk))
 
-    def patch(self, request: Request, pk: str) -> HttpResponse:
+    def patch(self, request: common.typing.Request, pk: str) -> HttpResponse:
 
         instance = self.get_object(request, pk)
 
-        serializer = serializers.StoredPassword(request=request, instance=instance, data=request.data)
+        form = forms.StoredPassword.from_request_and_instance(request=request, instance=instance)
 
-        if serializer.is_valid():
-            serializer.save()
-            return redirect('passy:passwords', request=request)
+        if form.update_model(request, instance):
+            return redirect('passy:passwords')
         else:
-            return self.finalize_result(request, instance, serializer)
+            # todo: make sure we show the errors
+            return self.finalize_result(request, instance, form)
 
-    def get(self, request: Request, pk: str) -> HttpResponse:
+    def get(self, request: common.typing.Request, pk: str) -> HttpResponse:
 
         instance = self.get_object(request, pk)
 
-        serializer = serializers.StoredPassword(request=request, instance=instance)
+        form = forms.StoredPassword.from_request_and_instance(request=request, instance=instance)
 
         if request.is_ajax():
-            return JsonResponse(data=serializer.data, status=status.HTTP_200_OK)
+            return JsonResponse(data=form.data, status=common.status.HTTP_200_OK)
         else:
-            return self.finalize_result(request, instance, serializer)
+            return self.finalize_result(request, instance, form)
 
-    def delete(self, request: Request, pk: str) -> HttpResponse:
+    def delete(self, request: common.typing.Request, pk: str) -> HttpResponse:
 
         instance = self.get_object(request, pk)
 
         instance.delete()
 
-        return redirect('passy:passwords', request=request)
+        return redirect('passy:passwords')
 
-    def finalize_result(self, request: Request, instance: models.StoredPassword, serializer: serializers.StoredPassword) -> HttpResponse:
+    def finalize_result(self, request: common.typing.Request, instance: models.StoredPassword, form: forms.StoredPassword) -> HttpResponse:
 
         data = dict(pk=instance.pk)
-        data.update(serializer.data)
+        data.update(form.data)
 
         return render(request, self.template_name, data)
 
@@ -142,10 +140,10 @@ class PasswordView(APIView):
 class GetRandomPasswordView(View):
 
     @staticmethod
-    def get(request: WSGIRequest) -> HttpResponse:
+    def get(request: common.typing.Request) -> HttpResponse:
 
-        serializer = serializers.GeneratedPasswordRequest(data=request.GET)
-        if serializer.is_valid():
-            return JsonResponse(data=dict(generated_password=serializer.save()))
+        form = forms.GeneratedPasswordRequest(data=request.GET)
+        if form.is_valid():
+            return JsonResponse(data=dict(generated_password=form.get_password()))
         else:
-            return JSONResponse(data=serializer.errors)
+            return JsonResponse(data=form.errors)

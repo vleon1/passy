@@ -2,7 +2,7 @@ from os import path
 import string
 import secrets
 
-from passy import common
+import passy.common.crypto
 
 
 # todo: configure cache
@@ -18,7 +18,7 @@ DEBUG = True
 if DEBUG:
     SECRET_KEY = "|z*)*#!HRkC4X\\Wy~GjL~L<'.\\.T}QvdJy^(r#E{hl^}#uig4;:6>t<81cy8ZvOn"
 else:
-    SECRET_KEY = common.generate_random_password
+    SECRET_KEY = passy.common.crypto.generate_random_password
 
 
 ALLOWED_HOSTS = []
@@ -33,7 +33,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -114,7 +113,6 @@ NPM_FINDER_USE_CACHE = not DEBUG
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',

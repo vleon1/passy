@@ -5,15 +5,20 @@ from typing import List, Dict, Any
 
 from django.shortcuts import get_object_or_404
 
-import common
+import common.crypto
+
+
+# Django makes us specify the max_length of CharField's, we chose to use a value that will work on all databases and should be enough
+# for all our usages:
+MAX_CHAR_FIELD = 255
 
 
 class StoredPassword(models.Model):
 
-    site: str = models.CharField(max_length=200)
+    site: str = models.CharField(max_length=MAX_CHAR_FIELD)
 
-    data: bytes = models.BinaryField(max_length=200)
-    salt: bytes = models.BinaryField(max_length=200)
+    data: bytes = models.BinaryField()
+    salt: bytes = models.BinaryField()
 
     owner: User = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -22,25 +27,17 @@ class StoredPassword(models.Model):
 
     def set(self, password: str, master_password: str) -> None:
 
-        self.salt = common.generate_salt()
-        crypter = common.get_crypter(master_password=master_password, salt=self.salt)
+        self.salt = common.crypto.generate_salt()
+        crypter = common.crypto.get_crypter(master_password=master_password, salt=self.salt)
         self.data = crypter.encrypt(password.encode())
 
     def get(self, master_password: str) -> str:
 
-        crypter = common.get_crypter(master_password=master_password, salt=self.salt)
+        crypter = common.crypto.get_crypter(master_password=master_password, salt=self.salt)
 
         password = crypter.decrypt(self.data).decode()
 
         return password
-
-
-def get_users(**kwargs: Dict[str, Any]) -> List[User]:
-    return User.objects.filter(**kwargs)
-
-
-def get_user(**kwargs: Dict[str, Any]) -> User:
-    return get_object_or_404(User, **kwargs)
 
 
 def get_passwords(**kwargs: Dict[str, Any]) -> List[StoredPassword]:

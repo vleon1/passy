@@ -67,7 +67,7 @@ function initClipboard()
 
 function initForms() {
 
-    // Overrides the get pasword button to call rest directly
+    // Overrides the get password button to call rest directly
     $('#get_password').submit(function (event) {
 
         event.preventDefault();
