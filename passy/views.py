@@ -9,6 +9,7 @@ from django.views import View
 from . import models, forms
 import common.status
 import common.shortcuts
+import common.crypto
 
 import common.typing
 
@@ -85,24 +86,19 @@ class PasswordListView(View):
     def post(self, request: common.typing.Request) -> HttpResponse:
 
         form = forms.StoredPassword(data=request.POST)
+        form.create_model(request)
 
-        if not form.create_model(request):
-            pass  # todo: do something?
-
-        return self.finalize_result(request)
+        return self.finalize_result(request, form)
 
     def get(self, request: common.typing.Request) -> HttpResponse:
 
-        return self.finalize_result(request)
+        return self.finalize_result(request, forms.StoredPassword())
 
-    def finalize_result(self, request: common.typing.Request) -> HttpResponse:
+    def finalize_result(self, request: common.typing.Request, form: forms.StoredPassword) -> HttpResponse:
 
-        form = forms.StoredPassword()
-
-        form_data = {field.name: field.value() or "" for field in form}
-
-        data = dict(stored_passwords=models.get_passwords(owner=request.user))
-        data.update(form_data)
+        data = dict(stored_passwords=models.get_passwords(owner=request.user),
+                    form=form,
+                    new_password_default_length=common.crypto.default_password_length)
 
         return render(request, self.template_name, data)
 
@@ -149,8 +145,7 @@ class PasswordView(View):
 
     def finalize_result(self, request: common.typing.Request, instance: models.StoredPassword, form: forms.StoredPassword) -> HttpResponse:
 
-        data = dict(pk=instance.pk)
-        data.update(form.data)
+        data = dict(pk=instance.pk, new_password_default_length=common.crypto.default_password_length, form=form)
 
         return render(request, self.template_name, data)
 
@@ -163,6 +158,6 @@ class GetRandomPasswordView(View):
 
         form = forms.GeneratedPasswordRequest(data=request.GET)
         if form.is_valid():
-            return JsonResponse(data=dict(generated_password=form.get_random_password()))
+            return JsonResponse(data=dict(generated_password=form.get_random_password()), status=common.status.HTTP_200_OK)
         else:
-            return JsonResponse(data=form.errors)
+            return JsonResponse(data=form.errors, status=common.status.HTTP_400_BAD_REQUEST)

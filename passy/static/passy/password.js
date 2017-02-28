@@ -1,23 +1,31 @@
-
 function fillPassword(url, id_postfix) {
 
+    const passwordTimeout = 5000;
+
+    const getButton = jQuery('#download_' + id_postfix)[0];
+    const copyButton = jQuery('#clipboard_' + id_postfix)[0];
+
     jQuery.getJSON(url, function(data) {
-        setPassword(data, id_postfix);
+        setPassword(data);
+        setTimeout(resetPassword, passwordTimeout);
     });
 
-    function setPassword(data, id_postfix) {
-        const getButton = jQuery('#get' + id_postfix)[0];
-        const copyButton = jQuery('#copy' + id_postfix)[0];
-
-        const new_visibility = getButton.style.visibility;
-        const new_display = getButton.style.display;
-
+    function setPassword(data) {
         getButton.style.visibility = 'hidden';
         getButton.style.display = 'none';
 
         copyButton.setAttribute('data-clipboard-text', data.stored_password_text);
-        copyButton.style.visibility = new_visibility;
-        copyButton.style.display = new_display;
+        copyButton.style.visibility = '';
+        copyButton.style.display = '';
+    }
+
+    function resetPassword() {
+        copyButton.setAttribute('data-clipboard-text', '');
+        copyButton.style.visibility = 'hidden';
+        copyButton.style.display = 'none';
+
+        getButton.style.visibility = '';
+        getButton.style.display = '';
     }
 }
 
@@ -45,27 +53,38 @@ function getPassword(form) {
 
     var url = form.action;
     var form_query = jQuery(form);
-    var length = form_query.find("input[name=length]")[0].valueAsNumber;
+    var length = form_query.find("input[name=length]")[0].value;
     var use_symbols = form_query.find("input[name=use_symbols]")[0].checked;
 
     var stored_password_text_field = jQuery("input[name=stored_password_text]")[0];
 
-    jQuery.getJSON(url, {length: length, use_symbols: use_symbols}, function(data) {
+    jQuery.getJSON(url, {length: length, use_symbols: use_symbols}).done(function(data) {
         stored_password_text_field.value = data['generated_password'];
     });
 }
 
-function confirmHiddenButtonClock(buttonId) {
-    if (confirm("Are you sure?") == true){
-       document.getElementById(buttonId).click();
+function lowerLength(id) {
+    const inputField = document.getElementById(id);
+
+    const value = parseInt(inputField.value);
+    if (!isNaN(value) && value > 1) {
+        inputField.value = value - 1;
     }
 }
 
-function initClipboard()
-{
+function raiseLength(id) {
+    const inputField = document.getElementById(id);
+
+    const value = parseInt(inputField.value);
+    if (!isNaN(value)) {
+        inputField.value = value + 1;
+    }
+}
+
+function initClipboard() {
     // Tooltip
-    jQuery('[id^=copy]').tooltip({
-        trigger: 'click',
+    jQuery('[id^=clipboard_]').tooltip({
+        trigger: 'manual',
         placement: 'bottom'
     });
 
@@ -73,23 +92,30 @@ function initClipboard()
         jQuery(button).tooltip('hide').attr('data-original-title', message).tooltip('show');
     }
 
-    function hideTooltip(button) {
-        setTimeout(function() {
-            jQuery(button).tooltip('hide');
-        }, 1000);
-    }
-
     // Clipboard
-    const clipboard = new Clipboard('.btn');
+    const clipboard = new Clipboard('[id^=clipboard_]');
+    const hiddenClipboard = new Clipboard('[id^=hidden_clipboard_]');
 
     clipboard.on('success', function(e) {
+        e.clearSelection();
         setTooltip(e.trigger, 'Copied!');
-        hideTooltip(e.trigger);
     });
     clipboard.on('error', function(e) {
         setTooltip(e.trigger, 'Press Ctrl-C to copy');
-        hideTooltip(e.trigger);
     });
+
+    hiddenClipboard.on('success', function(e) {
+        e.clearSelection();
+        executeHiddenButton(e)
+    });
+    hiddenClipboard.on('error', function(e) {
+        executeHiddenButton(e)
+    });
+
+    function executeHiddenButton(e) {
+        const id = e.trigger.dataset['executeTarget'];
+        document.getElementById(id).click()
+    }
 }
 
 function initGetRandomPasswordForm() {

@@ -42,11 +42,11 @@ class StoredPassword(forms.Form):
 
         instance.set(self.cleaned_data['stored_password_text'], request.session['master_password'])
 
-        try:
-            instance.save()
-        except IntegrityError:
-            pass  # todo: Add proper error handling for the errors list..
+        if models.StoredPassword.objects.filter(owner=request.user, site=instance.site).exists():
+            self.add_error(field='site', error="This name is already used to for another password")
             return False
+        else:
+            instance.save()
 
         return True
 
