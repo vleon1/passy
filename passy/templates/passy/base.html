@@ -35,7 +35,7 @@
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">User<span class="caret"></span></a>
                             <ul class="dropdown-menu">
-                                <li><a href="{% url 'passy:logout' %}">logout</a></li>
+                                <li><a onclick="document.getElementById('hidden_logout_form_button').click()">logout</a></li>
                             </ul>
                         </li>
                         {% else %}
@@ -44,6 +44,10 @@
                     </ul>
                 </nav>
             </div>
+            <form action="{% url 'passy:logout' %}" method="post">
+                {% csrf_token %}
+                <input id="hidden_logout_form_button" class="btn dropdown-item" type="submit" value="Logout" style="visibility:hidden;display:none">
+            </form>
         </header>
 
         <div class="container">

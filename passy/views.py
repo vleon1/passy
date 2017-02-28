@@ -2,31 +2,34 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse, JsonResponse
-from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 
 from . import models, forms
 import common.status
+import common.shortcuts
 
 import common.typing
 
 
-def redirect(name: str) -> HttpResponse:
-    url = reverse(name)
-    response = HttpResponseRedirect(url)
-    response.status_code = common.status.HTTP_303_SEE_OTHER
-    return response
+class IndexView(View):
+
+    template_name = 'passy/index.html'
+
+    def get(self, request: common.typing.Request) -> HttpResponse:
+        return render(request, self.template_name, dict())
 
 
-def index(request: common.typing.Request) -> HttpResponse:
-    return render(request, 'passy/index.html', dict())
+class RegisterView(View):
 
+    template_name = 'passy/register.html'
 
-def register(request: common.typing.Request) -> HttpResponse:
-    return render(request, 'passy/register.html', dict())
+    def get(self, request: common.typing.Request) -> HttpResponse:
+        return render(request, self.template_name, dict())
+
+    def post(self, request: common.typing.Request) -> HttpResponse:
+        return render(request, self.template_name, dict())
 
 
 class LoginView(View):
@@ -50,7 +53,7 @@ class LoginView(View):
 
                 auth.login(request, user)
                 request.session['master_password'] = master_password
-                return redirect('passy:password_list')
+                return common.shortcuts.redirect('passy:password_list')
 
             user = models.get_user_or_none(username=username)
             if user is not None:
@@ -64,11 +67,14 @@ class LoginView(View):
         return render(request, self.template_name, dict(form=form))
 
 
-def logout(request: common.typing.Request) -> HttpResponse:
+class LogoutView(View):
 
-    auth.logout(request)
+    @staticmethod
+    def post(request: common.typing.Request) -> HttpResponse:
 
-    return redirect('passy:index')
+        auth.logout(request)
+
+        return common.shortcuts.redirect('passy:index')
 
 
 @method_decorator(login_required, name='dispatch')
@@ -117,7 +123,7 @@ class PasswordView(View):
         form = forms.StoredPassword.from_request_and_instance(request=request, instance=instance)
 
         if form.update_model(request, instance):
-            return redirect('passy:password_list')
+            return common.shortcuts.redirect('passy:password_list')
         else:
             # todo: make sure we show the errors
             return self.finalize_result(request, instance, form)
@@ -139,7 +145,7 @@ class PasswordView(View):
 
         instance.delete()
 
-        return redirect('passy:password_list')
+        return common.shortcuts.redirect('passy:password_list')
 
     def finalize_result(self, request: common.typing.Request, instance: models.StoredPassword, form: forms.StoredPassword) -> HttpResponse:
 
@@ -149,6 +155,7 @@ class PasswordView(View):
         return render(request, self.template_name, data)
 
 
+@method_decorator(login_required, name='dispatch')
 class GetRandomPasswordView(View):
 
     @staticmethod
