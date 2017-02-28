@@ -29,27 +29,39 @@ def register(request: common.typing.Request) -> HttpResponse:
     return render(request, 'passy/register.html', dict())
 
 
-def login(request: common.typing.Request) -> HttpResponse:
+class LoginView(View):
 
-    context = dict()
+    template_name = 'passy/login.html'
 
-    if request.method == "POST":
+    def get(self, request: common.typing.Request) -> HttpResponse:
+        return render(request, self.template_name, dict())
 
-        username: str = request.POST['username']
-        master_password: str = request.POST['master_password']
+    def post(self, request: common.typing.Request) -> HttpResponse:
 
-        user = auth.authenticate(username=username, password=master_password)
-        if user is not None:
-            auth.login(request, user)
-            request.session['master_password'] = master_password
-            return redirect('passy:index')
-        else:
-            if models.User.objects.filter(username=username).exists():
-                context['error_message'] = f"Provided password is incorrect for user '{username}'"
+        form = forms.Login(data=request.POST)
+
+        if form.is_valid():
+
+            username = form.cleaned_data['username']
+            master_password = form.cleaned_data['master_password']
+
+            user = auth.authenticate(username=username, password=master_password)
+            if user is not None:
+
+                auth.login(request, user)
+                request.session['master_password'] = master_password
+                return redirect('passy:password_list')
+
+            user = models.get_user_or_none(username=username)
+            if user is not None:
+                if not user.is_active:
+                    form.add_error(field=None, error=f"The user '{username}' is not activated yet")
+                else:
+                    form.add_error(field="master_password", error="Incorrect password")
             else:
-                context['error_message'] = f"User with the name '{username}' does not Exist!"
+                form.add_error(field="username", error="Incorrect username")
 
-    return render(request, 'passy/login.html', context)
+        return render(request, self.template_name, dict(form=form))
 
 
 def logout(request: common.typing.Request) -> HttpResponse:
@@ -105,7 +117,7 @@ class PasswordView(View):
         form = forms.StoredPassword.from_request_and_instance(request=request, instance=instance)
 
         if form.update_model(request, instance):
-            return redirect('passy:passwords')
+            return redirect('passy:password_list')
         else:
             # todo: make sure we show the errors
             return self.finalize_result(request, instance, form)
@@ -127,7 +139,7 @@ class PasswordView(View):
 
         instance.delete()
 
-        return redirect('passy:passwords')
+        return redirect('passy:password_list')
 
     def finalize_result(self, request: common.typing.Request, instance: models.StoredPassword, form: forms.StoredPassword) -> HttpResponse:
 

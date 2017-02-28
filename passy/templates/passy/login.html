@@ -6,12 +6,28 @@
     {% else %}
         <form action="{% url 'passy:login' %}" method="post">
             {% csrf_token %}
-            <div class="form-group">
+
+            <div class="form-group{% if form.username.errors %} has-error{% endif %}">
                 <label for="username">User Name:</label>
+                {% for error in form.username.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        {{ error|escape }}
+                    </div>
+                {% endfor %}
                 <input type="text" class="form-control" name="username" id="username" placeholder="Enter username" required>
             </div>
-            <div class="form-group">
+
+            <div class="form-group{% if form.master_password.errors %} has-error{% endif %}">
                 <label for="master_password">Password</label>
+                {% for error in form.master_password.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                        <span class="sr-only">Error:</span>
+                        {{ error|escape }}
+                    </div>
+                {% endfor %}
                 <input type="password" class="form-control" name="master_password" id="master_password" placeholder="Enter password" required>
             </div>
 

@@ -1,7 +1,8 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.contrib.auth.models import User
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from django.shortcuts import get_object_or_404
 
@@ -46,3 +47,11 @@ def get_passwords(**kwargs: Dict[str, Any]) -> List[StoredPassword]:
 
 def get_password(**kwargs: Dict[str, Any]) -> StoredPassword:
     return get_object_or_404(StoredPassword, **kwargs)
+
+
+def get_user_or_none(**kwargs: Dict[str, Any]) -> Optional[User]:
+
+    try:
+        return User.objects.get(**kwargs)
+    except ObjectDoesNotExist:
+        return None

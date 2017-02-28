@@ -11,8 +11,8 @@ import common.typing
 
 class StoredPassword(forms.Form):
 
-    site = forms.CharField(max_length=models.MAX_CHAR_FIELD)
-    stored_password_text = forms.CharField(initial=common.crypto.generate_random_password)
+    site = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True)
+    stored_password_text = forms.CharField(initial=common.crypto.generate_random_password, required=True)
 
     @classmethod
     def from_request_and_instance(cls, request: common.typing.Request, instance: models.StoredPassword) -> "StoredPassword":
@@ -59,3 +59,9 @@ class GeneratedPasswordRequest(forms.Form):
     def get_random_password(self) -> str:
         return common.crypto.generate_random_password(length=self.cleaned_data['length'],
                                                       use_symbols=self.cleaned_data['use_symbols'])
+
+
+class Login(forms.Form):
+
+    username = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True)
+    master_password = forms.CharField(required=True)
