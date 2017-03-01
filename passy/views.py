@@ -38,7 +38,8 @@ class LoginView(View):
     template_name = 'passy/login.html'
 
     def get(self, request: common.typing.Request) -> HttpResponse:
-        return render(request, self.template_name, dict())
+
+        return self.finalize_result(request, forms.Login())
 
     def post(self, request: common.typing.Request) -> HttpResponse:
 
@@ -64,6 +65,10 @@ class LoginView(View):
                     form.add_error(field="master_password", error="Incorrect password")
             else:
                 form.add_error(field="username", error="Incorrect username")
+
+        return self.finalize_result(request, form)
+
+    def finalize_result(self, request: common.typing.Request, form: forms.Login) -> HttpResponse:
 
         return render(request, self.template_name, dict(form=form))
 

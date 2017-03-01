@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 {% load static %}
+{% load common %}
 
 <html lang="en">
     <head>
@@ -53,13 +54,7 @@
         <div class="container">
             <div class="col-md-9" role="main">
                 {% if form %}
-                    {% for error in form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">
-                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                            <span class="sr-only">Error:</span>
-                            {{ error|escape }}
-                        </div>
-                    {% endfor %}
+                    {% render_errors form.non_field_errors %}
                 {% endif %}
                 {% block content %}
                 {% endblock content %}
