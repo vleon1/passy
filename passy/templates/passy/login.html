@@ -7,7 +7,7 @@
         <form action="{% url 'passy:login' %}" method="post">
             {% csrf_token %}
 
-            <div class="form-group{% if form.username.errors %} has-error{% endif %}">
+            <div class="form-group{% if form.errors.username %} has-error{% endif %}">
                 <label for="username">User Name:</label>
                 {% for error in form.username.errors %}
                     <div class="alert alert-danger" role="alert">
@@ -16,10 +16,11 @@
                         {{ error|escape }}
                     </div>
                 {% endfor %}
-                <input type="text" class="form-control" name="username" id="username" placeholder="Enter username" required>
+                <input type="text" class="form-control" name="username" id="username" placeholder="Enter username"
+                       value="{{ form.username }}" required>
             </div>
 
-            <div class="form-group{% if form.master_password.errors %} has-error{% endif %}">
+            <div class="form-group{% if form.errors.master_password %} has-error{% endif %}">
                 <label for="master_password">Password</label>
                 {% for error in form.master_password.errors %}
                     <div class="alert alert-danger" role="alert">
@@ -28,7 +29,8 @@
                         {{ error|escape }}
                     </div>
                 {% endfor %}
-                <input type="password" class="form-control" name="master_password" id="master_password" placeholder="Enter password" required>
+                <input type="password" class="form-control" name="master_password" id="master_password" placeholder="Enter password"
+                       value="{{ form.master_password }}" required>
             </div>
 
             <button type="submit" class="btn btn-primary">Login</button>

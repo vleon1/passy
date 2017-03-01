@@ -1,15 +1,15 @@
 import json
 
-from django.db import IntegrityError
 from django import forms
 
 from . import models
 import common.crypto
+import common.forms
 
 import common.typing
 
 
-class StoredPassword(forms.Form):
+class StoredPassword(common.forms.ComfyForm):
 
     site = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True)
     stored_password_text = forms.CharField(initial=common.crypto.generate_random_password, required=True)
@@ -37,13 +37,13 @@ class StoredPassword(forms.Form):
         if not self.is_valid():
             return False
 
-        instance.site = self.cleaned_data['site']
+        instance.site = self['site']
         instance.owner = request.user
 
-        instance.set(self.cleaned_data['stored_password_text'], request.session['master_password'])
+        instance.set(self['stored_password_text'], request.session['master_password'])
 
         if models.StoredPassword.objects.filter(owner=request.user, site=instance.site).exists():
-            self.add_error(field='site', error="This name is already used to for another password")
+            self.add_error(field='site', error=f"This name {instance.site} is already used for another password")
             return False
         else:
             instance.save()
@@ -51,17 +51,17 @@ class StoredPassword(forms.Form):
         return True
 
 
-class GeneratedPasswordRequest(forms.Form):
+class GeneratedPasswordRequest(common.forms.ComfyForm):
 
     length = forms.IntegerField(initial=common.crypto.default_password_length, required=True)
     use_symbols = forms.BooleanField(initial=True, required=False)
 
     def get_random_password(self) -> str:
-        return common.crypto.generate_random_password(length=self.cleaned_data['length'],
-                                                      use_symbols=self.cleaned_data['use_symbols'])
+        return common.crypto.generate_random_password(length=self['length'],
+                                                      use_symbols=self['use_symbols'])
 
 
-class Login(forms.Form):
+class Login(common.forms.ComfyForm):
 
     username = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True)
     master_password = forms.CharField(required=True)

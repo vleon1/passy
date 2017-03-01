@@ -131,7 +131,7 @@ class PasswordView(View):
         form = forms.StoredPassword.from_request_and_instance(request=request, instance=instance)
 
         if request.is_ajax():
-            return JsonResponse(data=form.data, status=common.status.HTTP_200_OK)
+            return JsonResponse(data=form.to_dict(), status=common.status.HTTP_200_OK)
         else:
             return self.finalize_result(request, instance, form)
 
