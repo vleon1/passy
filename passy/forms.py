@@ -30,9 +30,9 @@ class StoredPassword(common.forms.ComfyForm):
 
         instance = models.StoredPassword()
 
-        return self.update_model(request, instance)
+        return self.update_model(request, instance, check_for_existing_user=True)
 
-    def update_model(self, request: common.typing.Request, instance: models.StoredPassword) -> bool:
+    def update_model(self, request: common.typing.Request, instance: models.StoredPassword, check_for_existing_user: bool = False) -> bool:
 
         if not self.is_valid():
             return False
@@ -42,7 +42,7 @@ class StoredPassword(common.forms.ComfyForm):
 
         instance.set(self['stored_password_text'], request.session['master_password'])
 
-        if models.StoredPassword.objects.filter(owner=request.user, site=instance.site).exists():
+        if check_for_existing_user and models.StoredPassword.objects.filter(owner=request.user, site=instance.site).exists():
             self.add_error(field='site', error=f"This name {instance.site} is already used for another password")
             return False
         else:
