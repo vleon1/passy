@@ -1,26 +1,12 @@
 {% extends "passy/base.html" %}
 
-{% load common %}
-
 {% block content %}
     {% if request.user.is_authenticated %}
         <h1>You are already registered and logged in!</h1>
     {% else %}
         <form action="{% url 'passy:register' %}" method="post">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                {% render_field_input name="email" value="" placeholder="Enter your email" input_type="email" %}
-            </div>
-            <div class="form-group">
-                <label for="username">User Name</label>
-                {% render_field_input name="username" value="" placeholder="Enter the desired username" %}
-            </div>
-            <div class="form-group">
-                <label for="master_password">Password</label>
-                {% render_field_input name="master_password" value="" placeholder="Enter the desired password" input_type="password" %}
-            </div>
-
+            {% include 'passy/common/form.html' with form=form %}
             <button type="submit" class="btn btn-primary">Register</button>
         </form>
     {% endif %}

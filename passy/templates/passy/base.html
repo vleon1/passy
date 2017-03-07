@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 
 {% load static %}
-{% load common %}
 
 <html lang="en">
     <head>
@@ -53,9 +52,7 @@
 
         <div class="container">
             <div class="col-md-9" role="main">
-                {% if form %}
-                    {% render_errors form.non_field_errors %}
-                {% endif %}
+                {% if form %}{% include "passy/common/error.html" with errors=field.non_field_errors %}{% endif %}
                 {% block content %}
                 {% endblock content %}
             </div>

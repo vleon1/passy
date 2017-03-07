@@ -101,9 +101,11 @@ class PasswordListView(View):
 
     def finalize_result(self, request: common.typing.Request, form: forms.StoredPassword) -> HttpResponse:
 
+        generated_password_request_form = forms.GeneratedPasswordRequest()
+
         data = dict(stored_passwords=models.get_passwords(owner=request.user),
-                    form=form,
-                    new_password_default_length=common.crypto.default_password_length)
+                    password_form=form,
+                    generated_password_request_form=generated_password_request_form)
 
         return render(request, self.template_name, data)
 
@@ -150,7 +152,9 @@ class PasswordView(View):
 
     def finalize_result(self, request: common.typing.Request, instance: models.StoredPassword, form: forms.StoredPassword) -> HttpResponse:
 
-        data = dict(pk=instance.pk, new_password_default_length=common.crypto.default_password_length, form=form)
+        generated_password_request_form = forms.GeneratedPasswordRequest()
+
+        data = dict(pk=instance.pk, password_form=form, generated_password_request_form=generated_password_request_form)
 
         return render(request, self.template_name, data)
 

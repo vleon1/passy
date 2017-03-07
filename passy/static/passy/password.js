@@ -63,24 +63,6 @@ function getPassword(form) {
     });
 }
 
-function lowerLength(id) {
-    const inputField = document.getElementById(id);
-
-    const value = parseInt(inputField.value);
-    if (!isNaN(value) && value > 1) {
-        inputField.value = value - 1;
-    }
-}
-
-function raiseLength(id) {
-    const inputField = document.getElementById(id);
-
-    const value = parseInt(inputField.value);
-    if (!isNaN(value)) {
-        inputField.value = value + 1;
-    }
-}
-
 function initClipboard() {
     // Tooltip
     jQuery('[id^=clipboard_]').tooltip({

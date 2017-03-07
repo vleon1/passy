@@ -1,6 +1,7 @@
 import json
 
 from django import forms
+from django.forms import widgets
 
 from . import models
 import common.crypto
@@ -9,10 +10,41 @@ import common.forms
 import common.typing
 
 
+class TextInput(widgets.TextInput):
+    template_name = 'passy/widgets/text_input.html'
+
+
+class PasswordInput(widgets.PasswordInput):
+    template_name = 'passy/widgets/text_input.html'
+
+
+class NumberInput(widgets.TextInput):
+    input_type = 'text'
+    template_name = 'passy/widgets/number_input.html'
+
+    def __init__(self, attrs: dict=None):
+
+        if attrs is None:
+            attrs = {}
+
+        attrs["pattern"] = r"^[0-9]+$"
+        attrs["title"] = "numbers only"
+
+        super().__init__(attrs=attrs)
+
+
+class PasswordTextInput(widgets.TextInput):
+    template_name = 'passy/widgets/password_input.html'
+
+
+class CheckboxInput(widgets.CheckboxInput):
+    template_name = 'passy/widgets/checkbox_input.html'
+
+
 class StoredPassword(common.forms.ComfyForm):
 
-    site = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True)
-    stored_password_text = forms.CharField(initial=common.crypto.generate_random_password, required=True)
+    site = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True, widget=TextInput)
+    stored_password_text = forms.CharField(initial=common.crypto.generate_random_password, required=True, widget=PasswordTextInput)
 
     @classmethod
     def from_request_and_instance(cls, request: common.typing.Request, instance: models.StoredPassword) -> "StoredPassword":
@@ -37,10 +69,10 @@ class StoredPassword(common.forms.ComfyForm):
         if not self.is_valid():
             return False
 
-        instance.site = self['site']
+        instance.site = self.get_value('site')
         instance.owner = request.user
 
-        instance.set(self['stored_password_text'], request.session['master_password'])
+        instance.set(self.get_value('stored_password_text'), request.session['master_password'])
 
         if check_for_existing_user and models.StoredPassword.objects.filter(owner=request.user, site=instance.site).exists():
             self.add_error(field='site', error=f"This name {instance.site} is already used for another password")
@@ -53,15 +85,15 @@ class StoredPassword(common.forms.ComfyForm):
 
 class GeneratedPasswordRequest(common.forms.ComfyForm):
 
-    length = forms.IntegerField(initial=common.crypto.default_password_length, required=True)
-    use_symbols = forms.BooleanField(initial=True, required=False)
+    length = forms.IntegerField(initial=common.crypto.default_password_length, required=True, widget=NumberInput)
+    use_symbols = forms.BooleanField(initial=True, required=False, widget=CheckboxInput)
 
     def get_random_password(self) -> str:
-        return common.crypto.generate_random_password(length=self['length'],
-                                                      use_symbols=self['use_symbols'])
+        return common.crypto.generate_random_password(length=self.get_value('length'),
+                                                      use_symbols=self.get_value('use_symbols'))
 
 
 class Login(common.forms.ComfyForm):
 
-    username = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True)
-    master_password = forms.CharField(required=True)
+    username = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True, widget=TextInput)
+    master_password = forms.CharField(required=True, widget=PasswordInput)

@@ -1,26 +1,12 @@
 {% extends "passy/base.html" %}
 
-{% load common %}
-
 {% block content %}
     {% if request.user.is_authenticated %}
         <h1>You are already logged in!</h1>
     {% else %}
         <form action="{% url 'passy:login' %}" method="post">
             {% csrf_token %}
-
-            <div class="form-group{% if form.errors.username %} has-error{% endif %}">
-                <label for="username">User Name:</label>
-                {% render_errors form.errors.username %}
-                {% render_field_input name="username" placeholder="Enter username" %}
-            </div>
-
-            <div class="form-group{% if form.errors.master_password %} has-error{% endif %}">
-                <label for="master_password">Password</label>
-                {% render_errors form.errors.master_password %}
-                {% render_field_input name="master_password" input_type="password" placeholder="Enter password" %}
-            </div>
-
+            {% include 'passy/common/form.html' with form=form %}
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
     {% endif %}

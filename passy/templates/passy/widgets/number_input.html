@@ -1,0 +1,32 @@
+<div class="input-group">
+    {% include "passy/widgets/text_input.html" %}
+    <span class="input-group-btn">
+        <button class="btn btn-default" type="button" onclick="lowerLength()">
+            <span class="glyphicon glyphicon-minus"></span>
+        </button>
+    </span>
+    <span class="input-group-btn">
+        <button class="btn btn-default" type="button" onclick="raiseLength()">
+            <span class="glyphicon glyphicon-plus"></span>
+        </button>
+    </span>
+    <script>
+        function lowerLength() {
+            const inputField = document.getElementById("{{ widget.attrs.id }}");
+
+            const value = parseInt(inputField.value);
+            if (!isNaN(value) && value > 1) {
+                inputField.value = value - 1;
+            }
+        }
+
+        function raiseLength() {
+            const inputField = document.getElementById("{{ widget.attrs.id }}");
+
+            const value = parseInt(inputField.value);
+            if (!isNaN(value)) {
+                inputField.value = value + 1;
+            }
+        }
+    </script>
+</div>
