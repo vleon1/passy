@@ -43,8 +43,9 @@ class CheckboxInput(widgets.CheckboxInput):
 
 class StoredPassword(common.forms.ComfyForm):
 
-    site = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True, widget=TextInput)
-    stored_password_text = forms.CharField(initial=common.crypto.generate_random_password, required=True, widget=PasswordTextInput)
+    site = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True, label="Site or application name:", widget=TextInput)
+    stored_password_text = forms.CharField(initial=common.crypto.generate_random_password, required=True, label="New password:",
+                                           widget=PasswordTextInput)
 
     @classmethod
     def from_request_and_instance(cls, request: common.typing.Request, instance: models.StoredPassword) -> "StoredPassword":
@@ -95,5 +96,5 @@ class GeneratedPasswordRequest(common.forms.ComfyForm):
 
 class Login(common.forms.ComfyForm):
 
-    username = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True, widget=TextInput)
-    master_password = forms.CharField(required=True, widget=PasswordInput)
+    username = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True, label="User Name:", widget=TextInput)
+    master_password = forms.CharField(required=True, label="Password:", widget=PasswordInput)
