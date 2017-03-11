@@ -6,7 +6,7 @@
     {% else %}
         <form action="{% url 'passy:login' %}" method="post">
             {% csrf_token %}
-            {% include 'passy/common/form.html' with form=form %}
+            {% include 'passy_forms/forms/render/form.html' with form=form %}
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
     {% endif %}

@@ -52,7 +52,7 @@
 
         <div class="container">
             <div class="col-md-9" role="main">
-                {% if form %}{% include "passy/common/error.html" with errors=field.non_field_errors %}{% endif %}
+                {% if form %}{% include "passy_forms/forms/render/error.html" with errors=field.non_field_errors %}{% endif %}
                 {% block content %}
                 {% endblock content %}
             </div>

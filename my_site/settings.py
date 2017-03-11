@@ -2,7 +2,7 @@ from os import path
 import string
 import secrets
 
-import passy.common.crypto
+import passy.helpers.crypto
 
 
 # todo: configure cache
@@ -18,7 +18,7 @@ DEBUG = True
 if DEBUG:
     SECRET_KEY = "|z*)*#!HRkC4X\\Wy~GjL~L<'.\\.T}QvdJy^(r#E{hl^}#uig4;:6>t<81cy8ZvOn"
 else:
-    SECRET_KEY = passy.common.crypto.generate_random_password
+    SECRET_KEY = passy.helpers.crypto.generate_random_password
 
 
 ALLOWED_HOSTS = []
@@ -26,6 +26,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
+    'passy_forms.apps.PassyFormsConfig',
     'passy.apps.PassyConfig',
     'django.contrib.admin',
     'django.contrib.auth',

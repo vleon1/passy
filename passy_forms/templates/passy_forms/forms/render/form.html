@@ -1,0 +1,7 @@
+{% for field in form %}
+    <div class="form-group{% if field.errors %} has-error{% endif %}">
+        {% include "passy_forms/forms/render/error.html" with errors=field.errors %}
+        {{ field.label_tag }}
+        {{ field }}
+    </div>
+{% endfor %}

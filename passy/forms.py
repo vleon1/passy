@@ -1,54 +1,20 @@
 import json
 
-from django import forms
-from django.forms import widgets
+from passy import models
+from passy.helpers import crypto
+from passy.helpers import typing
 
-from . import models
-import common.crypto
-import common.forms
-
-import common.typing
+from passy_forms.forms.fields import CharField, PasswordField, IntegerField, BooleanField, TextPasswordField
+from passy_forms.forms.forms import Form
 
 
-class TextInput(widgets.TextInput):
-    template_name = 'passy/widgets/text_input.html'
+class StoredPassword(Form):
 
-
-class PasswordInput(widgets.PasswordInput):
-    template_name = 'passy/widgets/text_input.html'
-
-
-class NumberInput(widgets.TextInput):
-    input_type = 'text'
-    template_name = 'passy/widgets/number_input.html'
-
-    def __init__(self, attrs: dict=None):
-
-        if attrs is None:
-            attrs = {}
-
-        attrs["pattern"] = r"^[0-9]+$"
-        attrs["title"] = "numbers only"
-
-        super().__init__(attrs=attrs)
-
-
-class PasswordTextInput(widgets.TextInput):
-    template_name = 'passy/widgets/password_input.html'
-
-
-class CheckboxInput(widgets.CheckboxInput):
-    template_name = 'passy/widgets/checkbox_input.html'
-
-
-class StoredPassword(common.forms.ComfyForm):
-
-    site = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True, label="Site or application name:", widget=TextInput)
-    stored_password_text = forms.CharField(initial=common.crypto.generate_random_password, required=True, label="New password:",
-                                           widget=PasswordTextInput)
+    site = CharField(max_length=models.MAX_CHAR_FIELD, label="Site or application name:")
+    stored_password_text = TextPasswordField(initial=crypto.generate_random_password, label="New password:")
 
     @classmethod
-    def from_request_and_instance(cls, request: common.typing.Request, instance: models.StoredPassword) -> "StoredPassword":
+    def from_request_and_instance(cls, request: typing.Request, instance: models.StoredPassword) -> "StoredPassword":
 
         request_data = json.loads(request.body) if request.body else dict()
 
@@ -59,13 +25,13 @@ class StoredPassword(common.forms.ComfyForm):
 
         return cls(data=final_data)
 
-    def create_model(self, request: common.typing.Request) -> bool:
+    def create_model(self, request: typing.Request) -> bool:
 
         instance = models.StoredPassword()
 
         return self.update_model(request, instance, check_for_existing_user=True)
 
-    def update_model(self, request: common.typing.Request, instance: models.StoredPassword, check_for_existing_user: bool = False) -> bool:
+    def update_model(self, request: typing.Request, instance: models.StoredPassword, check_for_existing_user: bool = False) -> bool:
 
         if not self.is_valid():
             return False
@@ -84,17 +50,16 @@ class StoredPassword(common.forms.ComfyForm):
         return True
 
 
-class GeneratedPasswordRequest(common.forms.ComfyForm):
+class GeneratedPasswordRequest(Form):
 
-    length = forms.IntegerField(initial=common.crypto.default_password_length, required=True, widget=NumberInput)
-    use_symbols = forms.BooleanField(initial=True, required=False, widget=CheckboxInput)
+    length = IntegerField(initial=crypto.default_password_length)
+    use_symbols = BooleanField(initial=True)
 
     def get_random_password(self) -> str:
-        return common.crypto.generate_random_password(length=self.get_value('length'),
-                                                      use_symbols=self.get_value('use_symbols'))
+        return crypto.generate_random_password(length=self.get_value('length'), use_symbols=self.get_value('use_symbols'))
 
 
-class Login(common.forms.ComfyForm):
+class Login(Form):
 
-    username = forms.CharField(max_length=models.MAX_CHAR_FIELD, required=True, label="User Name:", widget=TextInput)
-    master_password = forms.CharField(required=True, label="Password:", widget=PasswordInput)
+    username = CharField(max_length=models.MAX_CHAR_FIELD, label="User Name:")
+    master_password = PasswordField(label="Password:")

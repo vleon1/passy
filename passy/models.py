@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Optional
 
 from django.shortcuts import get_object_or_404
 
-import common.crypto
+from passy.helpers import crypto
 
 
 # Django makes us specify the max_length of CharField's, we chose to use a value that will work on all databases and should be enough
@@ -28,13 +28,13 @@ class StoredPassword(models.Model):
 
     def set(self, password: str, master_password: str) -> None:
 
-        self.salt = common.crypto.generate_salt()
-        crypter = common.crypto.get_crypter(master_password=master_password, salt=self.salt)
+        self.salt = crypto.generate_salt()
+        crypter = crypto.get_crypter(master_password=master_password, salt=self.salt)
         self.data = crypter.encrypt(password.encode())
 
     def get(self, master_password: str) -> str:
 
-        crypter = common.crypto.get_crypter(master_password=master_password, salt=self.salt)
+        crypter = crypto.get_crypter(master_password=master_password, salt=self.salt)
 
         password = crypter.decrypt(self.data).decode()
 

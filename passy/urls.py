@@ -1,8 +1,10 @@
 from django.conf.urls import url
 
-from . import views
+from passy import views
+
 
 app_name = 'passy'
+
 
 urlpatterns = [
     url(r'^register', views.RegisterView.as_view(), name='register'),
