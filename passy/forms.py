@@ -4,14 +4,14 @@ from passy import models
 from passy.helpers import crypto
 from passy.helpers import typing
 
-from passy_forms.forms.fields import CharField, PasswordField, IntegerField, BooleanField, TextPasswordField
+from passy_forms.forms.fields import CharField, EmailField, PasswordField, IntegerField, BooleanField, TextPasswordField
 from passy_forms.forms.forms import Form
 
 
 class StoredPassword(Form):
 
-    site = CharField(max_length=models.MAX_CHAR_FIELD, label="Site or application name:")
-    stored_password_text = TextPasswordField(initial=crypto.generate_random_password, label="New password:")
+    site = CharField(label="Site or application name:")
+    stored_password_text = TextPasswordField(label="New password:")
 
     @classmethod
     def from_request_and_instance(cls, request: typing.Request, instance: models.StoredPassword) -> "StoredPassword":
@@ -63,3 +63,13 @@ class Login(Form):
 
     username = CharField(max_length=models.MAX_CHAR_FIELD, label="User Name:")
     master_password = PasswordField(label="Password:")
+
+
+class Register(Form):
+
+    email = EmailField(label="Email:", disabled=True)
+
+    username = CharField(max_length=models.MAX_CHAR_FIELD, label="User Name:")
+
+    password = PasswordField(label="Password:")
+    repeated_password = PasswordField(label="Confirm password:")

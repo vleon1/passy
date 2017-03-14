@@ -26,10 +26,13 @@ class RegisterView(View):
     template_name = 'passy/register.html'
 
     def get(self, request: typing.Request) -> HttpResponse:
-        return render(request, self.template_name, dict())
+        return self.finalize_result(request, forms.Register())
 
     def post(self, request: typing.Request) -> HttpResponse:
-        return render(request, self.template_name, dict())
+        return self.finalize_result(request, forms.Register())
+
+    def finalize_result(self, request: typing.Request, form: forms.Register) -> HttpResponse:
+        return render(request, self.template_name, dict(form=form))
 
 
 class LoginView(View):

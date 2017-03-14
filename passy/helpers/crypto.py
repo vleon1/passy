@@ -11,6 +11,10 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 default_password_length = secrets.DEFAULT_ENTROPY*2
 
+# Chosen according to this: https://blog.codinghorror.com/your-password-is-too-damn-short/
+minimum_password_length = 12
+maximum_password_length = 255
+
 
 def generate_random_password(length: int=default_password_length, use_symbols: bool=True) -> str:
 
